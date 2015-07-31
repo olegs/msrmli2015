@@ -117,21 +117,22 @@ debug_mode = 0
 # The code should keep track of time spent and NOT exceed the time limit 
 # in the dataset "info" file, stored in D.info['time_budget'], see code below.
 # If debug >=1, you can decrease the maximum time (in sec) with this variable:
-max_time = 90 
+max_time = 90
 
 # Maximum number of cycles
 ##########################
 # Your training algorithm may be fast, so you may want to limit anyways the 
 # number of points on your learning curve (this is on a log scale, so each 
 # point uses twice as many time than the previous one.)
-max_cycle = 1#100
+max_cycle = 1  # 100
 
 # ZIP your code
 ###############
 # You can create a code submission archive, ready to submit, with zipme = True.
 # This is meant to be used on your LOCAL server.
 import datetime
-zipme = True # use this flag to enable zipping of your code submission
+
+zipme = True  # use this flag to enable zipping of your code submission
 the_date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 submission_filename = '../automl_sample_submission_' + the_date
 
@@ -152,15 +153,21 @@ default_output_dir = "res"
 # 2.7 zipping fix, disabled GPUs
 version = 2.7
 
+
+from Petersburg_sample_code_v3.christine import christine
+from Petersburg_sample_code_v3.jasmine import jasmine
+from Petersburg_sample_code_v3.madeline import madeline
+from Petersburg_sample_code_v3.phylippine import phylippine
+from Petersburg_sample_code_v3.sylvine import sylvine
+
+
 # General purpose functions
 import os
 from sys import argv, path
 import numpy as np
 import time
 overall_start = time.time()
-from sklearn.ensemble import RandomForestClassifier as RForestClass
-from sklearn.ensemble import RandomForestRegressor as RForestRegress
-from sklearn.ensemble import BaggingClassifier, BaggingRegressor
+from sklearn.ensemble import BaggingClassifier
 from sklearn.naive_bayes import BernoulliNB
 
 # Our directories
@@ -168,220 +175,189 @@ from sklearn.naive_bayes import BernoulliNB
 running_on_codalab = False
 run_dir = os.path.abspath(".")
 codalab_run_dir = os.path.join(run_dir, "program")
-if os.path.isdir(codalab_run_dir): 
-    run_dir=codalab_run_dir
+if os.path.isdir(codalab_run_dir):
+    run_dir = codalab_run_dir
     running_on_codalab = True
     print "Running on Codalab!"
 lib_dir = os.path.join(run_dir, "lib")
 res_dir = os.path.join(run_dir, "res")
 
 # Our libraries  
-path.append (run_dir)
-path.append (lib_dir)
-import data_io                       # general purpose input/output functions
-from data_io import vprint           # print only in verbose mode
-from data_manager import DataManager # load/save data and get info about them
+path.append(run_dir)
+path.append(lib_dir)
+import data_io  # general purpose input/output functions
+from data_io import vprint  # print only in verbose mode
+from data_manager import DataManager  # load/save data and get info about them
 
-if debug_mode >= 4 or running_on_codalab: # Show library version and directory structure
+if debug_mode >= 4 or running_on_codalab:  # Show library version and directory structure
     data_io.show_version()
     data_io.show_dir(run_dir)
 
 # =========================== BEGIN PROGRAM ================================
 
-if __name__=="__main__" and debug_mode<4:	
+if __name__ == "__main__" and debug_mode < 4:
     #### Check whether everything went well (no time exceeded)
     execution_success = True
-    
+
     #### INPUT/OUTPUT: Get input and output directory names
-    if len(argv)==1: # Use the default input and output directories if no arguments are provided
+    if len(argv) == 1:  # Use the default input and output directories if no arguments are provided
         input_dir = default_input_dir
         output_dir = default_output_dir
     else:
         input_dir = argv[1]
         output_dir = os.path.abspath(argv[2]);
     # Move old results and create a new output directory 
-    if not(running_on_codalab):
-        data_io.mvdir(output_dir, '../'+output_dir+'_'+the_date) 
-    data_io.mkdir(output_dir) 
-    
+    if not (running_on_codalab):
+        data_io.mvdir(output_dir, '../' + output_dir + '_' + the_date)
+    data_io.mkdir(output_dir)
+
     #### INVENTORY DATA (and sort dataset names alphabetically)
     datanames = data_io.inventory_data(input_dir)
-    
+
     #### DEBUG MODE: Show dataset list and STOP
-    if debug_mode>=3:
+    if debug_mode >= 3:
         data_io.show_io(input_dir, output_dir)
-        print('\n****** Sample code version ' + str(version) + ' ******\n\n' + '========== DATASETS ==========\n')        	
-        data_io.write_list(datanames)      
-        datanames = [] # Do not proceed with learning and testing
-        
+        print('\n****** Sample code version ' + str(version) + ' ******\n\n' + '========== DATASETS ==========\n')
+        data_io.write_list(datanames)
+        datanames = []  # Do not proceed with learning and testing
+
     # ==================== @RESULT SUBMISSION (KEEP THIS) =====================
     # Always keep this code to enable result submission of pre-calculated results
     # deposited in the res/ subdirectory.
-    if len(datanames)>0:
-        vprint( verbose,  "************************************************************************")
-        vprint( verbose,  "****** Attempting to copy files (from res/) for RESULT submission ******")
-        vprint( verbose,  "************************************************************************")
-        OK = data_io.copy_results(datanames, res_dir, output_dir, verbose) # DO NOT REMOVE!
-        if OK: 
-            vprint( verbose,  "[+] Success")
-            datanames = [] # Do not proceed with learning and testing
+    if len(datanames) > 0:
+        vprint(verbose, "************************************************************************")
+        vprint(verbose, "****** Attempting to copy files (from res/) for RESULT submission ******")
+        vprint(verbose, "************************************************************************")
+        OK = data_io.copy_results(datanames, res_dir, output_dir, verbose)  # DO NOT REMOVE!
+        if OK:
+            vprint(verbose, "[+] Success")
+            datanames = []  # Do not proceed with learning and testing
         else:
-            vprint( verbose, "======== Some missing results on current datasets!")
-            vprint( verbose, "======== Proceeding to train/test:\n")
+            vprint(verbose, "======== Some missing results on current datasets!")
+            vprint(verbose, "======== Proceeding to train/test:\n")
     # =================== End @RESULT SUBMISSION (KEEP THIS) ==================
 
     # ================ @CODE SUBMISSION (SUBTITUTE YOUR CODE) ================= 
     overall_time_budget = 0
-    for basename in datanames: # Loop over datasets
-        
-        vprint( verbose,  "************************************************")
-        vprint( verbose,  "******** Processing dataset " + basename.capitalize() + " ********")
-        vprint( verbose,  "************************************************")
-        
+    for basename in datanames:  # Loop over datasets
+
+        vprint(verbose, "************************************************")
+        vprint(verbose, "******** Processing dataset " + basename.capitalize() + " ********")
+        vprint(verbose, "************************************************")
+
         # ======== Learning on a time budget:
         # Keep track of time not to exceed your time budget. Time spent to inventory data neglected.
         start = time.time()
-        
+
         # ======== Creating a data object with data, informations about it
-        vprint( verbose,  "======== Reading and converting data ==========")
+        vprint(verbose, "======== Reading and converting data ==========")
         D = DataManager(basename, input_dir, replace_missing=True, filter_features=True, verbose=verbose)
         print D
-        
+
         # ======== Keeping track of time
-        if debug_mode<1:
-            time_budget = D.info['time_budget']        # <== HERE IS THE TIME BUDGET!
+        if debug_mode < 1:
+            time_budget = D.info['time_budget']  # <== HERE IS THE TIME BUDGET!
         else:
             time_budget = max_time
-            
+
         ########## PETERSBURG HACKATHON: 2 min per dataset
         time_budget = 2 * 60
-            
+
         overall_time_budget = overall_time_budget + time_budget
         time_spent = time.time() - start
-        vprint( verbose,  "[+] Remaining time after reading data %5.2f sec" % (time_budget-time_spent))
+        vprint(verbose, "[+] Remaining time after reading data %5.2f sec" % (time_budget - time_spent))
         if time_spent >= time_budget:
-            vprint( verbose,  "[-] Sorry, time budget exceeded, skipping this task")
+            vprint(verbose, "[-] Sorry, time budget exceeded, skipping this task")
             execution_success = False
             continue
-        
+
         # ========= Creating a model, knowing its assigned task from D.info['task'].
         # The model can also select its hyper-parameters based on other elements of info.  
         # vprint( verbose,  "======== Creating model ==========")
         # M = MyAutoML(D.info, verbose, debug_mode)
         # print M
-        
+
         # ========= Iterating over learning cycles and keeping track of time
         time_spent = time.time() - start
-        vprint( verbose,  "[+] Remaining time after building model %5.2f sec" % (time_budget-time_spent))        
+        vprint(verbose, "[+] Remaining time after building model %5.2f sec" % (time_budget - time_spent))
         if time_spent >= time_budget:
-            vprint( verbose,  "[-] Sorry, time budget exceeded, skipping this task")
+            vprint(verbose, "[-] Sorry, time budget exceeded, skipping this task")
             execution_success = False
             continue
 
-        time_budget = time_budget - time_spent # Remove time spent so far
-        start = time.time()              # Reset the counter
-        time_spent = 0                   # Initialize time spent learning
-        time_spent_last = 0                   # Initialize time spent learning
+        time_budget = time_budget - time_spent  # Remove time spent so far
+        start = time.time()  # Reset the counter
+        time_spent = 0  # Initialize time spent learning
+        time_spent_last = 0  # Initialize time spent learning
         cycle = 0
-        
-        while  cycle <= 1: #max_cycle:
+
+        while cycle <= 1:  # max_cycle:
             begin = time.time()
-            vprint( verbose,  "=========== " + basename.capitalize() +" Training cycle " + str(cycle) +" ================") 
+            vprint(verbose,
+                   "=========== " + basename.capitalize() + " Training cycle " + str(cycle) + " ================")
             n_estimators = 10
-            if cycle==1:
-                n_estimators = int((np.floor(time_budget / time_spent_last) - 1 ) * 5) # * 5 == aim to use 5/10 of the time budget
+            if cycle == 1:
+                n_estimators = int(
+                    (np.floor(time_budget / time_spent_last) - 1) * 5)  # * 5 == aim to use 5/10 of the time budget
                 if n_estimators <= 0:
                     break
-            vprint( verbose,  "[+] Number of estimators: %d" % (n_estimators))   
-            
-            K = D.info['target_num']
-            sparse = False
-            if D.info['is_sparse'] == 1:
-                sparse = True
-           
-                
-            task = D.info['task']
+            vprint(verbose, "[+] Number of estimators: %d" % (n_estimators))
 
-            if task == 'binary.classification' or task == 'multiclass.classification':
-                if sparse:
-                    M = BaggingClassifier(base_estimator=BernoulliNB(), n_estimators=n_estimators/10).fit(D.data['X_train'], D.data['Y_train'])
-                else:
-                    M = RForestClass(n_estimators, random_state=1).fit(D.data['X_train'], D.data['Y_train'])
-            elif task == 'multilabel.classification':
-                if sparse:
-                    Ms = [BaggingClassifier(base_estimator=BernoulliNB(), n_estimators=n_estimators/10).fit(D.data['X_train'], D.data['Y_train'][:, i]) for i in range(K)]
-                else:
-                    Ms = [RForestClass(n_estimators, random_state=1).fit(D.data['X_train'], D.data['Y_train'][:, i]) for i in range(K)]
-            elif task == 'regression':  
-                if sparse:
-                    M = BaggingRegressor(base_estimator=BernoulliNB(), n_estimators=n_estimators/10).fit(D.data['X_train'], D.data['Y_train'])
-                else:            
-                    M = RForestRegress(n_estimators, random_state=n_estimators).fit(D.data['X_train'], D.data['Y_train'])
+            K = D.info['target_num']
+            assert D.info['is_sparse'] == 0
+            task = D.info['task']
+            name = D.info['name']
+
+            if name == 'christine':
+                M = christine(D, n_estimators)
+            elif name == 'jasmine':
+                M = jasmine(D, n_estimators)
+            elif name == 'madeline':
+                M = madeline(D, n_estimators)
+            elif name == 'phylippine':
+                M = phylippine(D, n_estimators)
+            elif name == 'sylvine':
+                M = sylvine(D, n_estimators)
             else:
-                vprint( verbose,  "[-] task not recognised")
-                break         
-            vprint( verbose,  "[+] Fitting success, time spent so far %5.2f sec" % (time.time() - start))
-            
-            
+                print("FAILED to load classifier for " + name)
+                break
+            vprint(verbose, "[+] Fitting success, time spent so far %5.2f sec" % (time.time() - start))
+
+
             # Make predictions
-            if task == 'binary.classification':
-                Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
-                Y_test =  M.predict_proba(D.data['X_test'])[:, 1]
-                print Y_valid, Y_test
-            elif task == 'multiclass.classification':
-                Y_valid = np.array([M.predict_proba(D.data['X_valid'])[:, i] for i in range(K)]).T 
-                Y_test =  np.array([M.predict_proba(D.data['X_test'])[:, i] for i in range(K)]).T 
-                
-                
-            elif task == 'multilabel.classification':
-                Y_valid = np.array([Ms[i].predict_proba(D.data['X_valid'])[:, 1] for i in range(K)]).T
-                Y_test =  np.array([Ms[i].predict_proba(D.data['X_valid'])[:, 1] for i in range(K)]).T
-            elif task == 'regression':    
-                Y_valid = M.predict(D.data['X_valid'])
-                Y_test = M.predict(D.data['X_test'])
-            
-            if sparse:
-                if task == 'multilabel.classification' or task == 'multiclass.classification':
-                    eps = 0.001
-                    for i in range(len(Y_valid)):
-                        pos = np.argmax(Y_valid[i])
-                        Y_valid[i] += eps
-                        Y_valid[i][pos] -= K * eps
-                    for i in range(len(Y_test)):
-                        pos = np.argmax(Y_test[i])
-                        Y_test[i] += eps
-                        Y_test[i][pos] -= K * eps
-                    
-            
-            vprint( verbose,  "[+] Prediction success, time spent so far %5.2f sec" % (time.time() - start))
+            Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
+            Y_test = M.predict_proba(D.data['X_test'])[:, 1]
+            print Y_valid, Y_test
+
+            vprint(verbose, "[+] Prediction success, time spent so far %5.2f sec" % (time.time() - start))
             # Write results
             filename_valid = basename + '_valid_' + str(cycle).zfill(3) + '.predict'
-            data_io.write(os.path.join(output_dir,filename_valid), Y_valid)
+            data_io.write(os.path.join(output_dir, filename_valid), Y_valid)
             filename_test = basename + '_test_' + str(cycle).zfill(3) + '.predict'
-            data_io.write(os.path.join(output_dir,filename_test), Y_test)
-            vprint( verbose,  "[+] Results saved, time spent so far %5.2f sec" % (time.time() - start))         
-            time_spent = time.time() - start 
-            vprint( verbose,  "[+] End cycle, remaining time %5.2f sec" % (time_budget-time_spent))
+            data_io.write(os.path.join(output_dir, filename_test), Y_test)
+            vprint(verbose, "[+] Results saved, time spent so far %5.2f sec" % (time.time() - start))
+            time_spent = time.time() - start
+            vprint(verbose, "[+] End cycle, remaining time %5.2f sec" % (time_budget - time_spent))
             cycle += 1
             time_spent_last = time.time() - begin
-            time_budget = time_budget - time_spent_last # Remove time spent so far
-            
-    if zipme and not(running_on_codalab):
-        vprint( verbose,  "========= Zipping this directory to prepare for submit ==============")
+            time_budget = time_budget - time_spent_last  # Remove time spent so far
+
+    if zipme and not (running_on_codalab):
+        vprint(verbose, "========= Zipping this directory to prepare for submit ==============")
         data_io.zipdir(submission_filename + '.zip', ".")
-    	
+
     overall_time_spent = time.time() - overall_start
     if execution_success:
-        vprint( verbose,  "[+] Done")
-        vprint( verbose,  "[+] Overall time spent %5.2f sec " % overall_time_spent + "::  Overall time budget %5.2f sec" % overall_time_budget)
+        vprint(verbose, "[+] Done")
+        vprint(verbose,
+               "[+] Overall time spent %5.2f sec " % overall_time_spent + "::  Overall time budget %5.2f sec" % overall_time_budget)
     else:
-        vprint( verbose,  "[-] Done, but some tasks aborted because time limit exceeded")
-        vprint( verbose,  "[-] Overall time spent %5.2f sec " % overall_time_spent + " > Overall time budget %5.2f sec" % overall_time_budget)
-              
-    if running_on_codalab: 
+        vprint(verbose, "[-] Done, but some tasks aborted because time limit exceeded")
+        vprint(verbose,
+               "[-] Overall time spent %5.2f sec " % overall_time_spent + " > Overall time budget %5.2f sec" % overall_time_budget)
+
+    if running_on_codalab:
         if execution_success:
             exit(0)
         else:
             exit(1)
-
-
