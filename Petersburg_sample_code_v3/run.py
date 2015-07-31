@@ -327,7 +327,7 @@ if __name__ == "__main__" and debug_mode < 4:
 
             if not (running_on_codalab):
                 scores = cross_val_score(M, D.data['X_train'], D.data['Y_train'], cv=10)
-                print "CROSS VALIDATION SCORE:", scores.mean()
+                print "CROSS VALIDATION SCORE for " + name + ":", scores.mean()
 
             # Make predictions
             Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
