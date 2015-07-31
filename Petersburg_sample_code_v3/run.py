@@ -157,7 +157,7 @@ version = 2.7
 from Petersburg_sample_code_v3.christine import christine
 from Petersburg_sample_code_v3.jasmine import jasmine
 from Petersburg_sample_code_v3.madeline import madeline
-from Petersburg_sample_code_v3.phylippine import phylippine
+from Petersburg_sample_code_v3.philippine import philippine
 from Petersburg_sample_code_v3.sylvine import sylvine
 from sklearn.cross_validation import cross_val_score
 
@@ -316,8 +316,8 @@ if __name__ == "__main__" and debug_mode < 4:
                 M = jasmine(D, n_estimators)
             elif name == 'madeline':
                 M = madeline(D, n_estimators)
-            elif name == 'phylippine':
-                M = phylippine(D, n_estimators)
+            elif name == 'philippine':
+                M = philippine(D, n_estimators)
             elif name == 'sylvine':
                 M = sylvine(D, n_estimators)
             else:

@@ -4,7 +4,7 @@ from sklearn.pipeline import Pipeline
 
 __author__ = 'oleg'
 
-def madeline(D, n_estimators):
+def philippine(D, n_estimators):
     clf = Pipeline([
         ('feature_selection', VarianceThreshold(.5)),
         ('classification', RandomForestClassifier(n_estimators, random_state=1))
