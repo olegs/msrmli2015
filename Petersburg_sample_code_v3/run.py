@@ -159,6 +159,8 @@ from Petersburg_sample_code_v3.jasmine import jasmine
 from Petersburg_sample_code_v3.madeline import madeline
 from Petersburg_sample_code_v3.phylippine import phylippine
 from Petersburg_sample_code_v3.sylvine import sylvine
+from sklearn.cross_validation import cross_val_score
+
 
 
 # General purpose functions
@@ -323,6 +325,9 @@ if __name__ == "__main__" and debug_mode < 4:
                 break
             vprint(verbose, "[+] Fitting success, time spent so far %5.2f sec" % (time.time() - start))
 
+            if not (running_on_codalab):
+                scores = cross_val_score(M, D.data['X_train'], D.data['Y_train'], cv=10)
+                print "CROSS VALIDATION SCORE:", scores.mean()
 
             # Make predictions
             Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
