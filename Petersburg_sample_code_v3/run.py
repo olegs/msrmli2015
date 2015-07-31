@@ -140,7 +140,7 @@ submission_filename = '../automl_sample_submission_' + the_date
 # Use default location for the input and output data:
 # If no arguments to run.py are provided, this is where the data will be found
 # and the results written to. Change the root_dir to your local directory.
-default_input_dir = "/home/ubuntu/Data"
+default_input_dir = "../data"
 default_output_dir = "res"
 
 # =========================== END USER OPTIONS ================================
