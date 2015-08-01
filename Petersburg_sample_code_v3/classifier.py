@@ -25,7 +25,7 @@ def classify(D, name, n_estimators):
         # TODO BEST improvement is possible here!
         # 0.828 vs 0.599
         return Pipeline([
-            ('feature_selection', VarianceThreshold(.5)),
+            ('feature_selection', VarianceThreshold(.9)),
             ('classification', RandomForestClassifier(n_estimators, random_state=1))
         ]).fit(D.data['X_train'], D.data['Y_train'])
 
