@@ -142,7 +142,7 @@ submission_filename = '../automl_sample_submission_' + the_date
 # If no arguments to run.py are provided, this is where the data will be found
 # and the results written to. Change the root_dir to your local directory.
 default_input_dir = "../data"
-default_output_dir = "res"
+default_output_dir = "../res"
 
 # =========================== END USER OPTIONS ================================
 
@@ -153,15 +153,8 @@ default_output_dir = "res"
 # 2.7 zipping fix, disabled GPUs
 version = 2.7
 
-
-from Petersburg_sample_code_v3.christine import christine
-from Petersburg_sample_code_v3.jasmine import jasmine
-from Petersburg_sample_code_v3.madeline import madeline
-from Petersburg_sample_code_v3.philippine import philippine
-from Petersburg_sample_code_v3.sylvine import sylvine
+from classifier import classify
 from sklearn.cross_validation import cross_val_score
-
-
 
 # General purpose functions
 import os
@@ -291,61 +284,36 @@ if __name__ == "__main__" and debug_mode < 4:
         start = time.time()  # Reset the counter
         time_spent = 0  # Initialize time spent learning
         time_spent_last = 0  # Initialize time spent learning
-        cycle = 0
+        begin = time.time()
 
-        while cycle <= 1:  # max_cycle:
-            begin = time.time()
-            vprint(verbose,
-                   "=========== " + basename.capitalize() + " Training cycle " + str(cycle) + " ================")
-            n_estimators = 10
-            if cycle == 1:
-                n_estimators = int(
-                    (np.floor(time_budget / time_spent_last) - 1) * 5)  # * 5 == aim to use 5/10 of the time budget
-                if n_estimators <= 0:
-                    break
-            vprint(verbose, "[+] Number of estimators: %d" % (n_estimators))
+        # Check prerequisites
+        assert D.info['is_sparse'] == 0
+        assert D.info['task'] == "binary.classification"
+        name = D.info['name']
 
-            K = D.info['target_num']
-            assert D.info['is_sparse'] == 0
-            task = D.info['task']
-            name = D.info['name']
+        M = classify(D, name)
+        vprint(verbose, "[+] Fitting success, time spent so far %5.2f sec" % (time.time() - start))
 
-            if name == 'christine':
-                M = christine(D, n_estimators)
-            elif name == 'jasmine':
-                M = jasmine(D, n_estimators)
-            elif name == 'madeline':
-                M = madeline(D, n_estimators)
-            elif name == 'philippine':
-                M = philippine(D, n_estimators)
-            elif name == 'sylvine':
-                M = sylvine(D, n_estimators)
-            else:
-                print("FAILED to load classifier for " + name)
-                break
-            vprint(verbose, "[+] Fitting success, time spent so far %5.2f sec" % (time.time() - start))
+        # Process cross validation
+        if not (running_on_codalab):
+            vprint(verbose, "[+] Processing cross validation for %s" % name)
+            scores = cross_val_score(M, D.data['X_train'], D.data['Y_train'], cv=10, n_jobs=-1)
+            vprint(verbose, "[+] SCORE %5.3f" % scores.mean())
 
-            if not (running_on_codalab):
-                scores = cross_val_score(M, D.data['X_train'], D.data['Y_train'], cv=10)
-                print "CROSS VALIDATION SCORE for " + name + ":", scores.mean()
+        # Make predictions
+        Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
+        Y_test = M.predict_proba(D.data['X_test'])[:, 1]
+        print Y_valid, Y_test
 
-            # Make predictions
-            Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
-            Y_test = M.predict_proba(D.data['X_test'])[:, 1]
-            print Y_valid, Y_test
-
-            vprint(verbose, "[+] Prediction success, time spent so far %5.2f sec" % (time.time() - start))
-            # Write results
-            filename_valid = basename + '_valid_' + str(cycle).zfill(3) + '.predict'
-            data_io.write(os.path.join(output_dir, filename_valid), Y_valid)
-            filename_test = basename + '_test_' + str(cycle).zfill(3) + '.predict'
-            data_io.write(os.path.join(output_dir, filename_test), Y_test)
-            vprint(verbose, "[+] Results saved, time spent so far %5.2f sec" % (time.time() - start))
-            time_spent = time.time() - start
-            vprint(verbose, "[+] End cycle, remaining time %5.2f sec" % (time_budget - time_spent))
-            cycle += 1
-            time_spent_last = time.time() - begin
-            time_budget = time_budget - time_spent_last  # Remove time spent so far
+        vprint(verbose, "[+] Prediction success, time spent so far %5.2f sec" % (time.time() - start))
+        # Write results
+        filename_test = basename + '_test_' + str(0).zfill(3) + '.predict'
+        data_io.write(os.path.join(output_dir, filename_test), Y_test)
+        vprint(verbose, "[+] Results saved, time spent so far %5.2f sec" % (time.time() - start))
+        time_spent = time.time() - start
+        vprint(verbose, "[+] End cycle, remaining time %5.2f sec" % (time_budget - time_spent))
+        time_spent_last = time.time() - begin
+        time_budget = time_budget - time_spent_last  # Remove time spent so far
 
     if zipme and not (running_on_codalab):
         vprint(verbose, "========= Zipping this directory to prepare for submit ==============")
