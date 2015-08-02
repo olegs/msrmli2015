@@ -101,6 +101,8 @@
 ##############
 # Recommended to keep verbose = True: shows various progression messages
 from collections import OrderedDict
+from sklearn import cross_validation
+from libscores import bac_metric
 
 verbose = True # outputs messages to stdout and stderr for debug purposes
 
@@ -283,9 +285,10 @@ if __name__ == "__main__" and debug_mode < 4:
         # Process cross validation
         if not (running_on_codalab):
             vprint(verbose, "[+] Processing cross validation for %s" % name)
-            scores = cross_val_score(M, D.data['X_train'], D.data['Y_train'], cv=5, n_jobs=-1)
-            vprint(verbose, "[+] SCORE %f" % scores.mean())
-            cross_validation_report[name] = scores.mean()
+            predicted = cross_validation.cross_val_predict(M, D.data['X_train'], D.data['Y_train'], cv=5, n_jobs=-1)
+            score = bac_metric(predicted, D.data['Y_train'])
+            vprint(verbose, "[+] SCORE %f" % score)
+            cross_validation_report[name] = score
 
         # Make predictions
         Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
@@ -319,8 +322,8 @@ if __name__ == "__main__" and debug_mode < 4:
                "[-] Overall time spent %5.2f sec " % overall_time_spent + " > Overall time budget %5.2f sec" % overall_time_budget)
 
     # Log complete cross validation score
-    # Best scores so far: 0.532, 0.639, 0.771, 0.599, 0.889
     if not running_on_codalab:
+        vprint(verbose, "\nBest scores so far: 0.532, 0.639, 0.771, 0.599, 0.889")
         vprint(verbose, "\n[+] CROSS_VALIDATION score: %f" % sum(cross_validation_report.values()))
         for k, v in cross_validation_report.iteritems():
             vprint(verbose, "%s: " % k + "%f" % v)
