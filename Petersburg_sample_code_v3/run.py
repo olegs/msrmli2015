@@ -159,11 +159,8 @@ from sklearn.cross_validation import cross_val_score
 # General purpose functions
 import os
 from sys import argv, path
-import numpy as np
 import time
 overall_start = time.time()
-from sklearn.ensemble import BaggingClassifier
-from sklearn.naive_bayes import BernoulliNB
 
 # Our directories
 # Note: On codalab, there is an extra sub-directory called "program"
@@ -272,51 +269,36 @@ if __name__ == "__main__" and debug_mode < 4:
         # M = MyAutoML(D.info, verbose, debug_mode)
         # print M
 
-        cycle = 0
+        begin = time.time()
+        assert D.info['is_sparse'] == 0
+        assert D.info['task'] == "binary.classification"
+        name = D.info['name']
 
-        while cycle <= 1:  # max_cycle:
-            begin = time.time()
-            vprint(verbose,
-                   "=========== " + basename.capitalize() + " Training cycle " + str(cycle) + " ================")
-            n_estimators = 10
-            if cycle == 1:
-                n_estimators = int(
-                    (np.floor(time_budget / time_spent_last) - 1) * 5)  # * 5 == aim to use 5/10 of the time budget
-                if n_estimators <= 0:
-                    break
-            vprint(verbose, "[+] Number of estimators: %d" % n_estimators)
+        M = classify(D, name)
+        vprint(verbose, "[+] Fitting success, time spent so far %5.2f sec" % (time.time() - start))
 
-            K = D.info['target_num']
-            assert D.info['is_sparse'] == 0
-            task = D.info['task']
-            name = D.info['name']
+        # Process cross validation
+        if not (running_on_codalab):
+            vprint(verbose, "[+] Processing cross validation for %s" % name)
+            scores = cross_val_score(M, D.data['X_train'], D.data['Y_train'], cv=5, n_jobs=-1)
+            vprint(verbose, "[+] SCORE %f" % scores.mean())
 
-            M = classify(D, name, n_estimators)
-            vprint(verbose, "[+] Fitting success, time spent so far %5.2f sec" % (time.time() - start))
+        # Make predictions
+        Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
+        Y_test = M.predict_proba(D.data['X_test'])[:, 1]
+        print Y_valid, Y_test
 
-            # Process cross validation
-            if not (running_on_codalab):
-                vprint(verbose, "[+] Processing cross validation for %s" % name)
-                scores = cross_val_score(M, D.data['X_train'], D.data['Y_train'], cv=10, n_jobs=-1)
-                vprint(verbose, "[+] SCORE %5.3f" % scores.mean())
-
-            # Make predictions
-            Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
-            Y_test = M.predict_proba(D.data['X_test'])[:, 1]
-            print Y_valid, Y_test
-
-            vprint(verbose, "[+] Prediction success, time spent so far %5.2f sec" % (time.time() - start))
-            # Write results
-            filename_valid = basename + '_valid_' + str(cycle).zfill(3) + '.predict'
-            data_io.write(os.path.join(output_dir, filename_valid), Y_valid)
-            filename_test = basename + '_test_' + str(cycle).zfill(3) + '.predict'
-            data_io.write(os.path.join(output_dir, filename_test), Y_test)
-            vprint(verbose, "[+] Results saved, time spent so far %5.2f sec" % (time.time() - start))
-            time_spent = time.time() - start
-            vprint(verbose, "[+] End cycle, remaining time %5.2f sec" % (time_budget - time_spent))
-            cycle += 1
-            time_spent_last = time.time() - begin
-            time_budget = time_budget - time_spent_last  # Remove time spent so far
+        vprint(verbose, "[+] Prediction success, time spent so far %5.2f sec" % (time.time() - start))
+        # Write results
+        filename_valid = basename + '_valid_000.predict'
+        data_io.write(os.path.join(output_dir, filename_valid), Y_valid)
+        filename_test = basename + '_test_000.predict'
+        data_io.write(os.path.join(output_dir, filename_test), Y_test)
+        vprint(verbose, "[+] Results saved, time spent so far %5.2f sec" % (time.time() - start))
+        time_spent = time.time() - start
+        vprint(verbose, "[+] End cycle, remaining time %5.2f sec" % (time_budget - time_spent))
+        time_spent_last = time.time() - begin
+        time_budget = time_budget - time_spent_last  # Remove time spent so far
 
     if zipme and not (running_on_codalab):
         vprint(verbose, "========= Zipping this directory to prepare for submit ==============")
