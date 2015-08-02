@@ -286,7 +286,7 @@ if __name__ == "__main__" and debug_mode < 4:
         if not (running_on_codalab):
             vprint(verbose, "[+] Processing cross validation for %s" % name)
             predicted = cross_validation.cross_val_predict(M, D.data['X_train'], D.data['Y_train'], cv=5, n_jobs=-1)
-            score = bac_metric(predicted, D.data['Y_train'])
+            score = bac_metric(D.data['Y_train'], predicted)
             vprint(verbose, "[+] SCORE %f" % score)
             cross_validation_report[name] = score
 

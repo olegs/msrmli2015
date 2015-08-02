@@ -28,7 +28,7 @@ import scipy as sp
 swrite = stderr.write
 
 
-def binarize_predictions(array, task='binary.classification'):
+def binarize_predictions(array):
     ''' Turn predictions into decisions {0,1} by selecting the class with largest 
     score for multiclass problems and thresholding at 0.5 for other cases.'''
     # add a very small random value as tie breaker (a bit bad because this changes the score every time)
@@ -37,13 +37,7 @@ def binarize_predictions(array, task='binary.classification'):
     # np.random.seed(sum(array.shape))
     # array = array + eps*np.random.rand(array.shape[0],array.shape[1])
     bin_array = np.zeros(array.shape)
-    if (task != 'multiclass.classification') or (array.shape[1] == 1):
-        bin_array[array >= 0.5] = 1
-    else:
-        sample_num = array.shape[0]
-        for i in range(sample_num):
-            j = np.argmax(array[i, :])
-            bin_array[i, j] = 1
+    bin_array[array >= 0.5] = 1
     return bin_array
 
 
@@ -77,12 +71,12 @@ def mvmean(R, axis=0):
         return np.array(map(average, R.transpose()))
 
 
-def bac_metric(solution, prediction, task='binary.classification'):
+def bac_metric(solution, prediction):
     '''
      Here we used hacked BAC to apply to solution without any wrapping
     Compute the normalized balanced accuracy. The binarization and
     the normalization differ for the multi-label and multi-class case. '''
-    bin_prediction = binarize_predictions(prediction, task)
+    bin_prediction = binarize_predictions(prediction)
     [tn, fp, tp, fn] = acc_stat(solution, bin_prediction)
     # Bounding to avoid division by 0
     eps = 1e-15

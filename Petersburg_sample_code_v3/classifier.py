@@ -24,7 +24,7 @@ def classify(d, name):
         # See madeline.ipynb for more details
         return Pipeline([
             ('feature_selection', SelectPercentile(percentile=5, score_func=sklearn.feature_selection.f_classif)),
-            ('classification', RandomForestClassifier(n_estimators=200, random_state=1, n_jobs=-1))
+            ('classification', RandomForestClassifier(n_estimators=250, random_state=1, n_jobs=-1))
         ]).fit(d.data['X_train'], d.data['Y_train'])
 
     elif name == 'philippine':
