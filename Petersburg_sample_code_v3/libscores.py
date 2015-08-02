@@ -94,3 +94,10 @@ def bac_metric(solution, prediction):
     return score
 
 
+from sklearn import cross_validation
+from libscores import bac_metric
+
+
+def bac_cv(M, X, Y):
+    predicted = cross_validation.cross_val_predict(M, X, Y, cv=5, n_jobs=-1)
+    return bac_metric(Y, predicted)

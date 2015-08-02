@@ -102,7 +102,7 @@
 # Recommended to keep verbose = True: shows various progression messages
 from collections import OrderedDict
 from sklearn import cross_validation
-from libscores import bac_metric
+from libscores import bac_metric, bac_cv
 
 verbose = True # outputs messages to stdout and stderr for debug purposes
 
@@ -285,8 +285,7 @@ if __name__ == "__main__" and debug_mode < 4:
         # Process cross validation
         if not (running_on_codalab):
             vprint(verbose, "[+] Processing cross validation for %s" % name)
-            predicted = cross_validation.cross_val_predict(M, D.data['X_train'], D.data['Y_train'], cv=5, n_jobs=-1)
-            score = bac_metric(D.data['Y_train'], predicted)
+            score = bac_cv(M, D.data['X_train'], D.data['Y_train'])
             vprint(verbose, "[+] SCORE %f" % score)
             cross_validation_report[name] = score
 
