@@ -231,6 +231,7 @@ if __name__ == "__main__" and debug_mode < 4:
 
     # ================ @CODE SUBMISSION (SUBTITUTE YOUR CODE) ================= 
     overall_time_budget = 0
+    cross_validation_report = {}
     for basename in datanames:  # Loop over datasets
 
         vprint(verbose, "************************************************")
@@ -282,6 +283,7 @@ if __name__ == "__main__" and debug_mode < 4:
             vprint(verbose, "[+] Processing cross validation for %s" % name)
             scores = cross_val_score(M, D.data['X_train'], D.data['Y_train'], cv=5, n_jobs=-1)
             vprint(verbose, "[+] SCORE %f" % scores.mean())
+            cross_validation_report[name] = scores.mean()
 
         # Make predictions
         Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
@@ -313,6 +315,12 @@ if __name__ == "__main__" and debug_mode < 4:
         vprint(verbose, "[-] Done, but some tasks aborted because time limit exceeded")
         vprint(verbose,
                "[-] Overall time spent %5.2f sec " % overall_time_spent + " > Overall time budget %5.2f sec" % overall_time_budget)
+
+    # Log complete cross validation score
+    if not running_on_codalab:
+        vprint(verbose, "\n[+] CROSS_VALIDATION score: %d" % sum(cross_validation_report.values()))
+        for name in cross_validation_report.keys():
+            vprint(verbose, "%s: " % name + "%f" % cross_validation_report[name])
 
     if running_on_codalab:
         if execution_success:
