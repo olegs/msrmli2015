@@ -100,6 +100,8 @@
 # Verbose mode: 
 ##############
 # Recommended to keep verbose = True: shows various progression messages
+from collections import OrderedDict
+
 verbose = True # outputs messages to stdout and stderr for debug purposes
 
 # Debug level:
@@ -231,7 +233,7 @@ if __name__ == "__main__" and debug_mode < 4:
 
     # ================ @CODE SUBMISSION (SUBTITUTE YOUR CODE) ================= 
     overall_time_budget = 0
-    cross_validation_report = {}
+    cross_validation_report = OrderedDict()
     for basename in datanames:  # Loop over datasets
 
         vprint(verbose, "************************************************")
@@ -317,10 +319,11 @@ if __name__ == "__main__" and debug_mode < 4:
                "[-] Overall time spent %5.2f sec " % overall_time_spent + " > Overall time budget %5.2f sec" % overall_time_budget)
 
     # Log complete cross validation score
+    # Best scores so far: 0.532, 0.639, 0.771, 0.599, 0.889
     if not running_on_codalab:
         vprint(verbose, "\n[+] CROSS_VALIDATION score: %f" % sum(cross_validation_report.values()))
-        for name in cross_validation_report.keys():
-            vprint(verbose, "%s: " % name + "%f" % cross_validation_report[name])
+        for k, v in cross_validation_report.iteritems():
+            vprint(verbose, "%s: " % k + "%f" % v)
 
     if running_on_codalab:
         if execution_success:
