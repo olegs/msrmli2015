@@ -1,5 +1,5 @@
 import sklearn
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
 from sklearn.feature_selection import SelectPercentile
 from sklearn.pipeline import Pipeline
 
@@ -24,7 +24,9 @@ def classify(d, name):
         # See madeline.ipynb for more details
         return Pipeline([
             ('feature_selection', SelectPercentile(percentile=5, score_func=sklearn.feature_selection.f_classif)),
-            ('classification', RandomForestClassifier(n_estimators=250, random_state=1, n_jobs=-1))
+            ('classification',
+             ExtraTreesClassifier(n_estimators=300, n_jobs=-1, max_depth=None, min_samples_split=1, random_state=1,
+                                  max_features=10))
         ]).fit(d.data['X_train'], d.data['Y_train'])
 
     elif name == 'philippine':
