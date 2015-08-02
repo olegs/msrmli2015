@@ -318,7 +318,7 @@ if __name__ == "__main__" and debug_mode < 4:
 
     # Log complete cross validation score
     if not running_on_codalab:
-        vprint(verbose, "\n[+] CROSS_VALIDATION score: %d" % sum(cross_validation_report.values()))
+        vprint(verbose, "\n[+] CROSS_VALIDATION score: %f" % sum(cross_validation_report.values()))
         for name in cross_validation_report.keys():
             vprint(verbose, "%s: " % name + "%f" % cross_validation_report[name])
 
