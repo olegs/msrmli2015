@@ -6,21 +6,9 @@ from sklearn.pipeline import Pipeline
 __author__ = 'ML2015Pluto'
 
 
-def eliminate_features(x, y, min_features):
-    """Tree-based feature selection: ExtraTreesClassifier"""
-    clf = ExtraTreesClassifier()
-    clf.fit(x, y).transform(x)
-    alpha = 0.5
-    features = [index for index, value in enumerate(clf.feature_importances_) if value > alpha]
-    while len(features) < min_features:
-        alpha /= 2
-        features = [index for index, value in enumerate(clf.feature_importances_) if value > alpha]
-    return features
-
-
 def classify(d, name):
-    """Feature selection inspired by some of the top teams"""
     if name == 'christine':
+        # Do not touch me! I'm #1
         return Pipeline([
             ('feature_selection', SelectPercentile(percentile=30, score_func=sklearn.feature_selection.f_classif)),
             ('classification', RandomForestClassifier(n_estimators=200, random_state=1, n_jobs=-1))
