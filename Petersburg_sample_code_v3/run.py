@@ -258,7 +258,7 @@ if __name__ == "__main__" and debug_mode < 4:
             time_budget = max_time
 
         ########## PETERSBURG HACKATHON: 2 min per dataset
-        time_budget = 2* 2 * 60
+        time_budget = 2 * 2 * 60
 
         overall_time_budget = overall_time_budget + time_budget
         time_spent = time.time() - start
