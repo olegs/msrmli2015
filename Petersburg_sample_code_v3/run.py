@@ -157,8 +157,7 @@ default_output_dir = "../res"
 # 2.7 zipping fix, disabled GPUs
 version = 2.7
 
-from classifier import classify
-from sklearn.cross_validation import cross_val_score
+from classifier import optimize
 
 # General purpose functions
 import os
@@ -279,15 +278,8 @@ if __name__ == "__main__" and debug_mode < 4:
         assert D.info['task'] == "binary.classification"
         name = D.info['name']
 
-        M = classify(D, name)
+        M = optimize(name, D.data['X_train'], D.data['Y_train'])
         vprint(verbose, "[+] Fitting success, time spent so far %5.2f sec" % (time.time() - start))
-
-        # Process cross validation
-        if not (running_on_codalab):
-            vprint(verbose, "[+] Processing cross validation for %s" % name)
-            score = bac_cv(M, D.data['X_train'], D.data['Y_train'])
-            vprint(verbose, "[+] SCORE %f" % score)
-            cross_validation_report[name] = score
 
         # Make predictions
         Y_valid = M.predict_proba(D.data['X_valid'])[:, 1]
