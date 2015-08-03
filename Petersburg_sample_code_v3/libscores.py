@@ -142,7 +142,6 @@ def auc_metric(solution, prediction):
 
 
 from sklearn import cross_validation
-from libscores import bac_metric
 
 
 def bac_cv(m, x, y):
