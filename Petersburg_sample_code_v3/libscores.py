@@ -130,15 +130,14 @@ def auc_metric(solution, prediction):
     binary and multilabel classification problems)."""
     # auc = metrics.roc_auc_score(solution, prediction, average=None)
     # There is a bug in metrics.roc_auc_score: auc([1,0,0],[1e-10,0,0]) incorrect
-    label_num = solution.shape[1]
+    label_num = 1
     auc = np.empty(label_num)
-    for k in range(label_num):
-        r_ = tiedrank(prediction[:, k])
-        s_ = solution[:, k]
-        if sum(s_) == 0: print('WARNING: no positive class example in class {}'.format(k + 1))
-        npos = sum(s_ == 1)
-        nneg = sum(s_ < 1)
-        auc[k] = (sum(r_[s_ == 1]) - npos * (npos + 1) / 2) / (nneg * npos)
+    r_ = tiedrank(prediction)
+    s_ = solution
+    if sum(s_) == 0: print('WARNING: no positive class example in class {}'.format(1))
+    npos = sum(s_ == 1)
+    nneg = sum(s_ < 1)
+    auc[0] = (sum(r_[s_ == 1]) - npos * (npos + 1) / 2) / (nneg * npos)
     return 2 * mvmean(auc) - 1
 
 

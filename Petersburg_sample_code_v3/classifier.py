@@ -6,6 +6,18 @@ from sklearn.pipeline import Pipeline
 __author__ = 'ML2015Pluto'
 
 
+def eliminate_features(x, y, min_features):
+    """Tree-based feature selection: ExtraTreesClassifier"""
+    clf = ExtraTreesClassifier()
+    clf.fit(x, y).transform(x)
+    alpha = 0.5
+    features = [index for index, value in enumerate(clf.feature_importances_) if value > alpha]
+    while len(features) < min_features:
+        alpha /= 2
+        features = [index for index, value in enumerate(clf.feature_importances_) if value > alpha]
+    return features
+
+
 def classify(d, name):
     if name == 'christine':
         # Do not touch me! I'm #1
