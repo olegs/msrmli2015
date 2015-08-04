@@ -38,7 +38,7 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
     for e in [100, 200, 270, 300]:
         # Start optimization from previous point
         if best_p > 0:
-            l, r = max(5, best_p - 25), min(80, best_p + 10)  # Since e is increasing, assymetric here
+            l, r = max(5, best_p - 25), min(80, best_p + 25)
         else:
             l, r = 5, 80
 
@@ -46,18 +46,14 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
         model_l, label_l = model_function(X, Y, l, e)
         metrics_l = metrics_function(model_l, X, Y)
         if metrics_l > best_metrics:
-            best_metrics = metrics_l;
-            best_label = label_l;
-            best_model = model_l
+            best_metrics, best_label, best_model = metrics_l, label_l, model_l
         print "Processed: %s" % label_l + " score: %f" % metrics_l
 
         # Right
         model_r, label_r = model_function(X, Y, r, e)
         metrics_r = metrics_function(model_r, X, Y)
         if metrics_r > best_metrics:
-            best_metrics = metrics_r;
-            best_label = label_r;
-            best_model = model_r
+            best_metrics, best_label, best_model = metrics_r, label_r, model_r
         print "Processed: %s" % label_r + " score: %f" % metrics_r
 
         no_progress = 0
