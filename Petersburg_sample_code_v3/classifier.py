@@ -67,7 +67,6 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
             metrics_p = metrics_function(model_p, X, Y)
             if metrics_p > best_metrics:
                 best_metrics, best_label, best_model, best_p = metrics_p, label_p, model_p, p
-                e_improved = True
                 no_progress = 0
             else:
                 no_progress += 1
@@ -89,6 +88,24 @@ def cv(m, x, y):
 
 def optimize(name, X, Y):
     """Performs optimization for given dataset"""
+    if name == 'madeline':
+        # See madeline.ipynb for more details
+        return Pipeline([
+            ('variation_zero', VarianceThreshold(exp(-10))),
+            ('feature_selection', SelectPercentile(percentile=5, score_func=sklearn.feature_selection.f_classif)),
+            ('classification',
+             ExtraTreesClassifier(n_estimators=270, n_jobs=-1, max_depth=None, min_samples_split=1,
+                                  random_state=1, max_features=10))
+        ]).fit(X, Y)
+
+    elif name == 'philippine':
+        return Pipeline([
+            ('variation_zero', VarianceThreshold(exp(-10))),
+            ('feature_selection', SelectPercentile(percentile=36, score_func=sklearn.feature_selection.f_classif)),
+            ('classification', ExtraTreesClassifier(n_estimators=270, n_jobs=-1, max_depth=None,
+                                                    min_samples_split=1, random_state=1, max_features=10))
+        ]).fit(X, Y)
+
     start = time.time()
 
     metrics_function = cv
