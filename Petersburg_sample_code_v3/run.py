@@ -312,13 +312,6 @@ if __name__ == "__main__" and debug_mode < 4:
         vprint(verbose,
                "[-] Overall time spent %5.2f sec " % overall_time_spent + " > Overall time budget %5.2f sec" % overall_time_budget)
 
-    # Log complete cross validation score
-    if not running_on_codalab:
-        vprint(verbose, "\nBest scores so far: 0.532, 0.639, 0.771, 0.599, 0.889")
-        vprint(verbose, "\n[+] CROSS_VALIDATION score: %f" % sum(cross_validation_report.values()))
-        for k, v in cross_validation_report.iteritems():
-            vprint(verbose, "%s: " % k + "%f" % v)
-
     if running_on_codalab:
         if execution_success:
             exit(0)
