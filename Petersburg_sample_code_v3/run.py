@@ -269,7 +269,6 @@ if __name__ == "__main__" and debug_mode < 4:
         # print M
 
         begin = time.time()
-        assert D.info['is_sparse'] == 0
         assert D.info['task'] == "binary.classification"
         name = D.info['name']
 
