@@ -22,6 +22,10 @@
 
 import numpy as np
 import scipy as sp
+from sklearn.base import is_classifier, clone
+from sklearn.cross_validation import _check_cv, _fit_and_predict, _check_is_partition
+from sklearn.externals.joblib import Parallel, delayed
+from sklearn.utils import indexable
 
 
 def binarize_predictions(array):
@@ -141,14 +145,87 @@ def auc_metric(solution, prediction):
     return 2 * mvmean(auc) - 1
 
 
-from sklearn import cross_validation
-
-
 def bac_cv(m, x, y):
-    predicted = cross_validation.cross_val_predict(m, x, y, cv=5, n_jobs=-1)
+    predicted = cross_val_predict(m, x, y, cv=5, n_jobs=-1)
     return bac_metric(y, predicted)
 
 
 def auc_cv(m, x, y):
-    predicted = cross_validation.cross_val_predict(m, x, y, cv=5, n_jobs=-1)
+    predicted = cross_val_predict(m, x, y, cv=5, n_jobs=-1)
     return auc_metric(y, predicted)
+
+
+def cross_val_predict(estimator, X, y=None, cv=None, n_jobs=1,
+                      verbose=0, fit_params=None, pre_dispatch='2*n_jobs'):
+    """Generate cross-validated estimates for each input data point
+
+    Parameters
+    ----------
+    estimator : estimator object implementing 'fit' and 'predict'
+        The object to use to fit the data.
+
+    X : array-like
+        The data to fit. Can be, for example a list, or an array at least 2d.
+
+    y : array-like, optional, default: None
+        The target variable to try to predict in the case of
+        supervised learning.
+
+    cv : cross-validation generator or int, optional, default: None
+        A cross-validation generator to use. If int, determines
+        the number of folds in StratifiedKFold if y is binary
+        or multiclass and estimator is a classifier, or the number
+        of folds in KFold otherwise. If None, it is equivalent to cv=3.
+        This generator must include all elements in the test set exactly once.
+        Otherwise, a ValueError is raised.
+
+    n_jobs : integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
+    verbose : integer, optional
+        The verbosity level.
+
+    fit_params : dict, optional
+        Parameters to pass to the fit method of the estimator.
+
+    pre_dispatch : int, or string, optional
+        Controls the number of jobs that get dispatched during parallel
+        execution. Reducing this number can be useful to avoid an
+        explosion of memory consumption when more jobs get dispatched
+        than CPUs can process. This parameter can be:
+
+            - None, in which case all the jobs are immediately
+              created and spawned. Use this for lightweight and
+              fast-running jobs, to avoid delays due to on-demand
+              spawning of the jobs
+
+            - An int, giving the exact number of total jobs that are
+              spawned
+
+            - A string, giving an expression as a function of n_jobs,
+              as in '2*n_jobs'
+
+    Returns
+    -------
+    preds : ndarray
+        This is the result of calling 'predict'
+    """
+    X, y = indexable(X, y)
+
+    cv = _check_cv(cv, X, y, classifier=is_classifier(estimator))
+    # We clone the estimator to make sure that all the folds are
+    # independent, and that it is pickle-able.
+    parallel = Parallel(n_jobs=n_jobs, verbose=verbose,
+                        pre_dispatch=pre_dispatch)
+    preds_blocks = parallel(delayed(_fit_and_predict)(clone(estimator), X, y,
+                                                      train, test, verbose,
+                                                      fit_params)
+                            for train, test in cv)
+    p = np.concatenate([p for p, _ in preds_blocks])
+    locs = np.concatenate([loc for _, loc in preds_blocks])
+    if not _check_is_partition(locs, X.shape[0]):
+        raise ValueError('cross_val_predict only works for partitions')
+    preds = p.copy()
+    preds[locs] = p
+    return preds
