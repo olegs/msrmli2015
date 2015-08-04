@@ -69,7 +69,7 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
             model_p, label_p = model_function(X, Y, p, e)
             metrics_p = metrics_function(model_p, X, Y)
             if metrics_p > best_metrics:
-                best_metrics, best_label, best_model, best_p = metrics_p, label_p, model_p = p
+                best_metrics, best_label, best_model, best_p = metrics_p, label_p, model_p, p
                 e_improved = True
                 no_progress = 0
             else:
