@@ -36,10 +36,9 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
     if time.time() - start > TIME_BUDGET:
         return best_model, best_metrics, best_label, best_p
     for e in [100, 200, 270, 300]:
-        e_improved = False
         # Start optimization from previous point
         if best_p > 0:
-            l, r = max(5, best_p - 25), min(80, best_p + 25)
+            l, r = max(5, best_p - 25), min(80, best_p + 10)
         else:
             l, r = 5, 80
 
@@ -48,7 +47,6 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
         metrics_l = metrics_function(model_l, X, Y)
         if metrics_l > best_metrics:
             best_metrics, best_label, best_model, best_p = metrics_l, label_l, model_l, l
-            e_improved = True
         print "Processed: %s" % label_l + " score: %f" % metrics_l
 
         # Right
@@ -56,7 +54,6 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
         metrics_r = metrics_function(model_r, X, Y)
         if metrics_r > best_metrics:
             best_metrics, best_label, best_model, best_p = metrics_r, label_r, model_r, r
-            e_improved = True
         print "Processed: %s" % label_r + " score: %f" % metrics_r
 
         no_progress = 0
@@ -82,8 +79,6 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
                 l, model_l, metrics_l, label_l = p, model_p, metrics_p, label_p
             if no_progress >= 3 or r - l <= 1:
                 break
-        if not e_improved:
-            break
     return best_model, best_metrics, best_label, best_p
 
 
