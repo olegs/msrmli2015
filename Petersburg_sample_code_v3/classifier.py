@@ -10,13 +10,6 @@ from libscores import bac_cv
 
 __author__ = 'ML2015Pluto'
 
-def rf_model(x, y, p, e):
-    return Pipeline([
-        ('variation_zero', VarianceThreshold(.1)),
-        ('feature_selection', SelectPercentile(percentile=p, score_func=sklearn.feature_selection.f_classif)),
-        ('classification', RandomForestClassifier(n_estimators=e, random_state=1, n_jobs=-1, min_samples_split=1))
-    ]).fit(x, y), "SELECT+RF percentile=%d" % p + " n_estimators=%d" % e
-
 
 def rf_no_var_model(x, y, p, e):
     return Pipeline([
@@ -60,7 +53,7 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
             best_model = model_l
         print "Processed: %s" % label_l + " score: %f" % metrics_l
 
-        # Rigth
+        # Right
         model_r, label_r = model_function(X, Y, r, e)
         metrics_r = metrics_function(model_r, X, Y)
         if metrics_r > best_metrics:
@@ -110,11 +103,8 @@ def optimize(name, X, Y):
     # Starting point
     model, metrics, label, p = None, 0, None, -1
 
-    if X.shape[0] / X.shape[1] > 10 or X.shape[1] > 1000:
-        model, metrics, label, p = process(X, Y, rf_no_var_model, metrics_function, model, metrics, label, p, start)
-    else:
-        model, metrics, label, p = process(X, Y, et_model, metrics_function, model, metrics, label, p, start)
-    model, metrics, label, p = process(X, Y, rf_model, metrics_function, model, metrics, label, p, start)
+    model, metrics, label, p = process(X, Y, et_model, metrics_function, model, metrics, label, p, start)
+    model, metrics, label, p = process(X, Y, rf_no_var_model, metrics_function, model, metrics, label, p, start)
 
     print "%s " % name + " best model: %s" % label + " metrics: %f" % metrics
     print "Time %dsec" % (time.time() - start)
