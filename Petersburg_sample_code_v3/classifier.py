@@ -1,12 +1,10 @@
 from math import exp
 
 import sklearn
+from sklearn.cross_validation import cross_val_score
 from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectPercentile, VarianceThreshold
-
-from libscores import auc_cv
-from libscores import bac_cv
 
 __author__ = 'ML2015Pluto'
 
@@ -30,7 +28,7 @@ def et_model(x, y, p, e):
 import time
 
 # Since some tasks may stop beforehand, use slightly more
-TIME_BUDGET = 5 * 60
+TIME_BUDGET = 4 * 60 + 30
 
 
 def process(X, Y, model_function, metrics_function, best_model, best_metrics, best_label, best_p, start):
@@ -91,14 +89,16 @@ def process(X, Y, model_function, metrics_function, best_model, best_metrics, be
     return best_model, best_metrics, best_label, best_p
 
 
+# Hack to prevent missing cross_val_predict
+def cv(m, x, y):
+    return cross_val_score(m, x, y, cv=5, n_jobs=-1).mean()
+
+
 def optimize(name, X, Y):
     """Performs optimization for given dataset"""
     start = time.time()
 
-    if name in ["christine", "jasmine", "madeline", "philippine", "sylvine"]:
-        metrics_function = bac_cv
-    else:
-        metrics_function = auc_cv
+    metrics_function = cv
 
     # Starting point
     model, metrics, label, p = None, 0, None, -1

@@ -100,10 +100,6 @@
 # Verbose mode: 
 ##############
 # Recommended to keep verbose = True: shows various progression messages
-from collections import OrderedDict
-from sklearn import cross_validation
-from libscores import bac_metric, bac_cv
-
 verbose = True # outputs messages to stdout and stderr for debug purposes
 
 # Debug level:
@@ -234,7 +230,6 @@ if __name__ == "__main__" and debug_mode < 4:
 
     # ================ @CODE SUBMISSION (SUBTITUTE YOUR CODE) ================= 
     overall_time_budget = 0
-    cross_validation_report = OrderedDict()
     for basename in datanames:  # Loop over datasets
 
         vprint(verbose, "************************************************")
