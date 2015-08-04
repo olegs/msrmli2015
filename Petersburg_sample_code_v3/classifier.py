@@ -11,17 +11,17 @@ from libscores import bac_cv
 __author__ = 'ML2015Pluto'
 
 
-def rf_no_var_model(x, y, p, e):
+def rf_model(x, y, p, e):
     return Pipeline([
         ('variation_zero', VarianceThreshold(exp(-10))),
         ('feature_selection', SelectPercentile(percentile=p, score_func=sklearn.feature_selection.f_classif)),
         ('classification', RandomForestClassifier(n_estimators=e, random_state=1, n_jobs=-1, min_samples_split=1))
-    ]).fit(x, y), "SELECT+RF_NO_VAR percentile=%d" % p + " n_estimators=%d" % e
+    ]).fit(x, y), "SELECT+RF percentile=%d" % p + " n_estimators=%d" % e
 
 
 def et_model(x, y, p, e):
     return Pipeline([
-        ('variation_zero', VarianceThreshold(.1)),
+        ('variation_zero', VarianceThreshold(exp(-10))),
         ('feature_selection', SelectPercentile(percentile=p, score_func=sklearn.feature_selection.f_classif)),
         ('classification', ExtraTreesClassifier(n_estimators=e, n_jobs=-1, random_state=1, min_samples_split=1))
     ]).fit(x, y), "SELECT+ET percentile=%d" % p + " n_estimators=%d" % e
@@ -104,7 +104,7 @@ def optimize(name, X, Y):
     model, metrics, label, p = None, 0, None, -1
 
     model, metrics, label, p = process(X, Y, et_model, metrics_function, model, metrics, label, p, start)
-    model, metrics, label, p = process(X, Y, rf_no_var_model, metrics_function, model, metrics, label, p, start)
+    model, metrics, label, p = process(X, Y, rf_model, metrics_function, model, metrics, label, p, start)
 
     print "%s " % name + " best model: %s" % label + " metrics: %f" % metrics
     print "Time %dsec" % (time.time() - start)
