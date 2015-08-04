@@ -1,0 +1,77 @@
+\documentclass{beamer}
+\usepackage{textcomp}
+\usepackage{adjustbox}
+
+% Command for centering image, keeping aspect ratio
+\newcommand*{\includeimage}[2][]{%
+	\centering{
+		\begin{figure}
+			\includegraphics[width=\textwidth, height=0.8\paperheight, keepaspectratio]{#2}
+		\end{figure}
+	}
+}
+\setbeamerfont{footnote}{size=\tiny}
+\usetheme{Boadilla}
+\usecolortheme{seagull}
+
+\title{Pluto team}
+\institute{\#MSRMLI2015}
+
+\date{\today}
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Team}
+\begin{itemize}
+\item Boris Pyakillya
+\item Tatyana Kayanova
+\item Oleg Shpynov
+\item Kristina Zipa
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Submission}
+\begin{itemize}
+\item Learn python and sklearn
+\item Use ipython notebook for prototyping
+\item Use Pipeline for quick combination
+\item Sketch a system for easily models testing
+\item Use brute force over optimization params
+\item Chose best params and submit, hardcoded by decision
+\item Observation: metrics is convex, so that optimization may be useful
+\item Implement binary parameters optimization
+\item Profit
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Hackatone}
+\begin{block}{Collaboration}
+\begin{itemize}
+	\item Live discussions
+	\item GitHub
+	\item Emails
+\end{itemize}
+\end{block}
+\begin{block}{What we liked}
+\begin{itemize}
+	\item Organization
+	\item Live scoring board
+	\item Great opportunity to get your hands dirty
+\end{itemize}
+\end{block}
+\begin{block}{What we didn't like}
+\begin{itemize}
+	\item Unbalanced teams
+	\item Ugly generic contest code
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\centering{\textbf{Thank you!}}
+\end{frame}
+
+\end{document}
