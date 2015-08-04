@@ -28,7 +28,7 @@ def et_model(x, y, p, e):
 import time
 
 # Since some tasks may stop beforehand, use slightly more
-TIME_BUDGET = 4 * 60 + 30
+TIME_BUDGET = 4 * 60
 
 
 def process(X, Y, model_function, metrics_function, best_model, best_metrics, best_label, best_p, start):
